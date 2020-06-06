@@ -32,28 +32,33 @@ class SandcrabsOverlay extends Overlay {
     @Override
     public Dimension render(Graphics2D graphics) {
         Point mp = client.getMouseCanvasPosition();
-        Player player = client.getLocalPlayer();
-        WorldPoint lp = player.getWorldLocation();
-        ItemContainer invContainer = client.getItemContainer(InventoryID.INVENTORY);
+//        Player player = client.getLocalPlayer();
+//        WorldPoint lp = player.getWorldLocation();
+//        ItemContainer invContainer = client.getItemContainer(InventoryID.INVENTORY);
 
-        graphics.fillRect(mp.getX() - 4, mp.getY() - 4, 8, 8);
+        int x = mp.getX();
+        int y = mp.getY();
 
         Rectangle r = graphics.getClipBounds();
-//        System.out.println("bounds x: " + r.getX() + ", y: " + r.getY() + ", width: " + r.getWidth() + ", height: " + r.getHeight());
         graphics.setColor(new Color(0, 56, 124, 150));
-        graphics.fillRect(0, 0, 400, 100);
+        graphics.fillRect(0, 20, 400, 100);
 
         graphics.setColor(new Color(0, 0, 0));
-        String mouseXStr = "Mouse X: " + mp.getX();
-        String mouseYStr = "Mouse Y: " + mp.getY();
+        String mouseXStr = "Mouse (RL) X: " + x;
+        String mouseYStr = "Mouse (RL) Y: " + y;
 
-        String lpX = "World X: " + lp.getX();
-        String lpY = "World Y: " + lp.getY();
+//        String lpX = "Mouse (AWT) X: " + mp2.getX();
+//        String lpY = "Mouse (AWT) Y: " + mp2.getY();
 
-        graphics.drawString(mouseXStr, 10, 20);
-        graphics.drawString(mouseYStr, 10, 40);
-        graphics.drawString(lpX, 10, 60);
-        graphics.drawString(lpY, 10, 80);
+        graphics.drawString(mouseXStr, 10, 40);
+        graphics.drawString(mouseYStr, 10, 60);
+//        graphics.drawString(lpX, 10, 80);
+//        graphics.drawString(lpY, 10, 100);
+
+        // show mouse
+        graphics.setColor(Color.WHITE);
+        graphics.drawLine(x, 0, x, client.getCanvasHeight());
+        graphics.drawLine(0, y, client.getCanvasWidth(), y);
 
         return null;
     }

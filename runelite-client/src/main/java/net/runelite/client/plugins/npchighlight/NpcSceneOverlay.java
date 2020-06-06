@@ -209,34 +209,30 @@ public class NpcSceneOverlay extends Overlay
 
 				renderPoly(graphics, color, centroid, true);
 
-//				if (clicked) {
-				Canvas canvas = client.getCanvas();
-				if (mouseAtDest) {
-					timer++;
-
-					if (timer >= 100) {
-						timer = 0;
-						mouseAtDest = false;
-					}
-				}
-
-//				if (timer == 0) System.out.println("0 tick: "  + System.currentTimeMillis());
-
-				if (!mouseAtDest && mouseSpot == 0) {
-					SynMouse.moveMouse(client, actor);
-					mouseAtDest = true;
-					mouseSpot = 1;
-				} else if (!mouseAtDest && mouseSpot == 1) {
-					SynMouse.moveMouse(client, 50, 50);
-					mouseAtDest = true;
-					mouseSpot = 2;
-				} else if (!mouseAtDest && mouseSpot == 2) {
-					SynMouse.moveMouse(client, 800, 700);
-					mouseAtDest = true;
-					mouseSpot = 0;
-				}
-				clicked = !clicked;
+//				Canvas canvas = client.getCanvas();
+//				if (mouseAtDest) {
+//					timer++;
+//
+//					if (timer >= 100) {
+//						timer = 0;
+//						mouseAtDest = false;
+//					}
 //				}
+//
+//				if (!mouseAtDest && mouseSpot == 0) {
+//					SynMouse.moveMouse(client, actor);
+//					mouseAtDest = true;
+//					mouseSpot = 1;
+//				} else if (!mouseAtDest && mouseSpot == 1) {
+//					SynMouse.moveMouse(client, 50, 50);
+//					mouseAtDest = true;
+//					mouseSpot = 2;
+//				} else if (!mouseAtDest && mouseSpot == 2) {
+//					SynMouse.moveMouse(client, 800, 700);
+//					mouseAtDest = true;
+//					mouseSpot = 0;
+//				}
+//				clicked = !clicked;
 
 				break;
 		}

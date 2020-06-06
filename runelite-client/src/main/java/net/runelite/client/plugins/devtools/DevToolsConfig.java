@@ -35,7 +35,7 @@ public interface DevToolsConfig extends Config
 		keyName = "inspectorAlwaysOnTop",
 		name = "",
 		description = "",
-		hidden = true
+		hidden = false
 	)
 	default boolean inspectorAlwaysOnTop()
 	{

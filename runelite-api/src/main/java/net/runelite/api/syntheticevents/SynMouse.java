@@ -1,23 +1,29 @@
-package net.runelite.api;
+package net.runelite.api.syntheticevents;
 
+import net.runelite.api.Actor;
+import net.runelite.api.Client;
+import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
 public class SynMouse {
-    /*
-    TODO:
-    1. Have a x% chance to overshoot mouse on target and quickly readjust back to target
-        a. If x% chance met, alter target x and y to overshoot
-    2. Add noise to each mouse event
-    3.
 
+    /**
+     * Following methods set and get the duration
+     * seed used for SynMouse delays.
      */
+    private static long duration = 200;
+
+    public static void setDuration(long newDuration) {
+        duration = newDuration;
+    }
+
+    public static long getDuration() { return duration; }
 
     private static int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
+        return (int) ((Math.random() * (max - min + 1)) + min);
     }
 
     private static Point getRandomPointInBounds(Rectangle r) {
@@ -32,7 +38,7 @@ public class SynMouse {
         return new Point(x, y);
     }
 
-    public static void moveMouse(Client client, int x, int y) {
+    public static Runnable moveMouse(Client client, int x, int y) {
         Canvas canvas = client.getCanvas();
 
         Runnable r = () -> {
@@ -52,9 +58,7 @@ public class SynMouse {
             long newTime = System.nanoTime();
             long factor = 10000;
             long nanoToMs = 100;
-            long diff = (newTime - time) / factor;
-            long timeToMove = 500;
-
+            long timeToMove = getRandomNumber((int) Math.max(0, duration - 200), (int) (duration + 200));
 
             int pollRate = 1000;
             int currentPoll = 0;
@@ -62,7 +66,7 @@ public class SynMouse {
 
             while (currentPoll < pollRate) {
                 newTime = System.nanoTime();
-                diff = (newTime - time) / factor;
+                long diff = (newTime - time) / factor;
 
                 double percentLeft = (double) currentPoll / (double) pollRate;
 
@@ -90,47 +94,43 @@ public class SynMouse {
             }
         };
 
-        Thread t = new Thread(r);
-        t.start();
+        return r;
     }
 
-    public static Point moveMouse(Client client, Rectangle rect) {
+    public static Runnable moveMouse(Client client, Rectangle rect) {
         Point random = getRandomPointInBounds(rect);
-        moveMouse(client, random.getX(), random.getY());
-        return random;
+        return moveMouse(client, random.getX(), random.getY());
     }
 
-    public static Point moveMouse(Client client, Actor actor) {
+    public static Runnable moveMouse(Client client, Actor actor) {
         LocalPoint lp = actor.getLocalLocation();
         Rectangle bounds = actor.getCanvasTilePoly().getBounds();
-//        Point canvasPoint = Perspective.localToCanvas(client, lp, client.getPlane());
 
-//        int x = canvasPoint.getX();
-//        int y = canvasPoint.getY();
-//
-//        moveMouse(client, canvas, x, y);
         return moveMouse(client, bounds);
     }
 
-    public static void pressMouse(Client client, Point p) {
+    public static Runnable click(Client client, int numTimes) {
         Canvas canvas = client.getCanvas();
+        Point p = client.getMouseCanvasPosition();
 
         Runnable r = () -> {
             try {
-                Thread.sleep((long) getRandomNumber(100, 350));
-                long time = System.currentTimeMillis();
+                for (int i = 0; i < numTimes; i++) {
+                    if (i > 0) Thread.sleep(getRandomNumber(150, 250));
 
-                MouseEvent press = new MouseEvent(canvas, MouseEvent.MOUSE_PRESSED, time, MouseEvent.BUTTON1_DOWN_MASK, p.getX(), p.getY(), 1, false, MouseEvent.BUTTON1);
-                MouseEvent release = new MouseEvent(canvas, MouseEvent.MOUSE_RELEASED, time, MouseEvent.BUTTON1_DOWN_MASK, p.getX(), p.getY(), 1, false, MouseEvent.BUTTON1);
+                    long time = System.currentTimeMillis();
 
-                canvas.dispatchEvent(press);
-                canvas.dispatchEvent(release);
+                    MouseEvent press = new MouseEvent(canvas, MouseEvent.MOUSE_PRESSED, time, MouseEvent.BUTTON1_DOWN_MASK, p.getX(), p.getY(), 1, false, MouseEvent.BUTTON1);
+                    MouseEvent release = new MouseEvent(canvas, MouseEvent.MOUSE_RELEASED, time, MouseEvent.BUTTON1_DOWN_MASK, p.getX(), p.getY(), 1, false, MouseEvent.BUTTON1);
+
+                    canvas.dispatchEvent(press);
+                    canvas.dispatchEvent(release);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         };
 
-        Thread t = new Thread(r);
-        t.start();
+        return r;
     }
 }

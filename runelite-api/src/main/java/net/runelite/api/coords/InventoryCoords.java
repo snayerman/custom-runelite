@@ -17,15 +17,16 @@ public class InventoryCoords {
     private static final int itemHeight = 31;
     private static final int itemGapMarginX = 11;
     private static final int itemGapMarginY = 5;
+    private static final int PADDING = 2;
 
     public static Rectangle getInventoryBounds(Client client) {
         Canvas c = client.getCanvas();
-        int cWidth = c.getWidth();
-        int cHeight = c.getHeight();
+        int cWidth = c.getWidth() - 1;
+        int cHeight = c.getHeight() - 1;
 
-        int tabHeight = 35;
+        int tabHeight = 36;
 
-        int inventoryWidth = 204;
+        int inventoryWidth = 203;
         int inventoryHeight = 274;
 
         int inventoryStartX = cWidth - inventoryWidth + borderWidth;
@@ -35,35 +36,22 @@ public class InventoryCoords {
     }
 
     // item must be 1 - 28
-    public static Rectangle getItemBounds(Client client, int item) {
+    public static Rectangle getItemBounds(Client client, int slot) {
+        if (slot < 1 || slot > 28) return null;
+
         Rectangle invBounds = getInventoryBounds(client);
 
-        int startX = (int) invBounds.getX();
-        int startY = (int) invBounds.getY();
+        int itemCol = slot % NUM_COLS == 0 ? 4 : slot % NUM_COLS;
+        int itemRow = (int) (slot / (NUM_COLS + 0.0001));
 
-        int col1StartX = startX + itemRowBufferMargin;
-        int col1EndX = col1StartX + itemWidth;
+        int startX = (int) invBounds.getX() + itemRowBufferMargin + ((itemCol - 1) * (itemGapMarginX + itemWidth));
+        int startY = (int) invBounds.getY() + itemColBufferMargin + (itemRow * (itemGapMarginY + itemHeight));
 
-        int row1StartY = startY + itemColBufferMargin;
-        int row1EndY = row1StartY + itemHeight;
-
-        int itemCol = item % NUM_COLS == 0 ? 4 : item % NUM_COLS;
-        int itemRow = item / NUM_ROWS;
-
-        int itemStartX = col1StartX;
-        int itemEndX = col1EndX;
-        for(int i = 1; i < itemCol; i++) {
-            itemStartX = itemEndX + itemGapMarginX;
-            itemEndX = itemStartX + itemWidth;
-        }
-
-        int itemStartY = row1StartY;
-        int itemEndY = row1EndY;
-        for(int i = 1; i < itemRow; i++) {
-            itemStartY = itemEndY + itemGapMarginY;
-            itemEndY = itemStartY + itemHeight;
-        }
-
-        return new Rectangle(itemStartX, itemStartY, itemWidth, itemHeight);
+        return new Rectangle(
+                startX + PADDING,
+                startY + PADDING,
+                itemWidth - PADDING,
+                itemHeight - PADDING
+        );
     }
 }

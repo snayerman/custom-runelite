@@ -208,6 +208,9 @@ public final class AnimationID
 	public static final int FARMING_MIX_ULTRACOMPOST = 7699;
 	public static final int FARMING_HARVEST_ALLOTMENT = 830;
 
+	// Standard spellbook
+	public static final int MAGIC_HIGH_ALCH = 713;
+
 	// Lunar spellbook
 	public static final int ENERGY_TRANSFER_VENGEANCE_OTHER = 4411;
 	public static final int MAGIC_LUNAR_SHARED = 4413; // Utilized by Fertile Soil, Boost/Stat Potion Share, NPC Contact, Bake Pie

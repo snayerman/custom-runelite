@@ -32,6 +32,7 @@ import javax.inject.Inject;
 
 import net.runelite.api.Client;
 import net.runelite.api.Point;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
@@ -50,12 +51,13 @@ public class SandcrabsInventoryOverlay extends WidgetItemOverlay
         this.plugin = plugin;
         showOnEquipment();
         showOnInventory();
+        showOnInterfaces(WidgetID.SPELLBOOK_GROUP_ID, WidgetID.EQUIPMENT_GROUP_ID);
     }
 
     @Override
     public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem itemWidget)
     {
-        Point mp = client.getMouseCanvasPosition();
-        graphics.fillRect(mp.getX() - 4, mp.getY() - 4, 8, 8);
+//        Point mp = client.getMouseCanvasPosition();
+//        graphics.fillRect(mp.getX() - 4, mp.getY() - 4, 8, 8);
     }
 }
