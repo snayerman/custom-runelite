@@ -13,6 +13,8 @@ import net.runelite.api.syntheticevents.SynEventExecutor;
 import net.runelite.api.syntheticevents.SynKey;
 import net.runelite.api.syntheticevents.SynMouse;
 import net.runelite.api.tabs.Inventory;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -22,10 +24,12 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.http.api.RuneLiteAPI;
 
 import javax.inject.Inject;
 import java.awt.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledFuture;
 
 @PluginDescriptor(
@@ -62,6 +66,17 @@ public class SandcrabsPlugin extends Plugin
     private SynEventExecutor executor;
 
     @Getter(AccessLevel.PACKAGE)
+    private int idleTicks = 0;
+
+    @Getter(AccessLevel.PACKAGE)
+    private boolean scriptStarted;
+
+    @Getter(AccessLevel.PACKAGE)
+    private int kills;
+
+    @Getter(AccessLevel.PACKAGE)
+    private ArrayList<NPC> npcsInteractingWithMe;
+
     private ScheduledFuture<?> moveMouseSpellTask;
     private ScheduledFuture<?> moveMouseItemTask;
     private ScheduledFuture<?> clickSpellTask;
@@ -74,14 +89,14 @@ public class SandcrabsPlugin extends Plugin
         overlayManager.add(overlay);
         overlayManager.add(inventoryOverlay);
 
-        /**
-         * Set all tasks to null
-         */
+//        moveMouseSpellTask = null;
+//        moveMouseItemTask = null;
+//        clickItemTask = null;
+//        clickSpellTask = null;
 
-        moveMouseSpellTask = null;
-        moveMouseItemTask = null;
-        clickItemTask = null;
-        clickSpellTask = null;
+        scriptStarted = false;
+        kills = 0;
+        npcsInteractingWithMe = new ArrayList<>();
 
         /**
          * Open up proper tab and do logic checking
@@ -116,14 +131,68 @@ public class SandcrabsPlugin extends Plugin
         clickItemTask = executor.scheduleTask(SynMouse.click(client, 1), 0);
     }
 
+    private void updateListOfNpcs(Player player, NPC npc) {
+        boolean npcInList = false;
+
+        for (NPC sandCrab : npcsInteractingWithMe) {
+            // The actor should be the LocalPlayer
+            Actor sandCrabEnemy = sandCrab.getInteracting();
+
+            // If the current NPC we're fighting is already in the list,
+            // set npcInList to true so we don't re-add him
+            if (npc != null && npc.getIndex() == sandCrab.getIndex())
+                npcInList = true;
+
+            // If sandCrab is dead, increment kill count and remove from list of
+            // currently interacting NPCs and break loop
+            if (sandCrab.isDead()) {
+                kills++;
+                npcsInteractingWithMe.remove(sandCrab);
+                break;
+            }
+
+            // If the current sandCrabEnemy is null (either dead or something happened) or
+            // the sandCrab interacting actor is not us, remove from list
+            if (sandCrabEnemy == null || (!sandCrabEnemy.getName().equals(player.getName()))) {
+                npcsInteractingWithMe.remove(sandCrab);
+            }
+        }
+
+        // Add npc to list if its a sand crab
+        if (!npcInList && npc != null && npc.getName().equals("Sand Crab")) npcsInteractingWithMe.add(npc);
+    }
+
+    private void clearNpcs() {
+        for (NPC npc : npcsInteractingWithMe) {
+            npcsInteractingWithMe.remove(npc);
+        }
+    }
+
     @Subscribe
     public void onGameTick(GameTick event)
     {
         Player player = client.getLocalPlayer();
-        int animation = player.getAnimation();
-        boolean inventoryOpen = Inventory.isOpen(client);
 
-        // Moving mouse to spell
+        if (player == null) return;
+
+        NPC interactingNpc = (NPC) player.getInteracting();
+        int animation = player.getAnimation();
+
+        if (scriptStarted) {
+            updateListOfNpcs(player, interactingNpc);
+
+            if (animation == AnimationID.IDLE) {
+                idleTicks++;
+
+//            if (idleTicks > 10) resetAggro();
+            } else if (npcsInteractingWithMe.size() == 0) {
+//                resetAggro();
+            }
+        } else {
+            clearNpcs();
+        }
+
+        /*// Moving mouse to spell
         if (moveMouseSpellTask != null) {
 //            System.out.println("Waiting to move mouse...");
             if (moveMouseSpellTask.isDone()) {
@@ -153,15 +222,23 @@ public class SandcrabsPlugin extends Plugin
         if (clickItemTask != null && clickItemTask.isDone() && !inventoryOpen) {
             clickItemTask = null;
             moveToSpell(StandardSpell.HIGH_LEVEL_ALCHEMY.getPosition());
-        }
+        }*/
     }
 
     @Subscribe
     public void onConfigChanged(ConfigChanged event) {
         overlay.setPosition(OverlayPosition.valueOf(config.position().toString()));
         overlay.setLayer(OverlayLayer.ABOVE_WIDGETS);
+        scriptStarted = config.enabled();
 
-        if (moveMouseSpellTask == null) moveToSpell(StandardSpell.HIGH_LEVEL_ALCHEMY.getPosition());
+        Player player = client.getLocalPlayer();
+//        Actor a = player.getInteracting();
+//        a.
+//        System.out.println(a.getName() + "\n");
+
+//        Widget inv = client.getWidget(WidgetInfo.TO_GROUP(9764864), WidgetInfo.TO_CHILD(9764864));
+
+//        if (moveMouseSpellTask == null) moveToSpell(StandardSpell.HIGH_LEVEL_ALCHEMY.getPosition());
 
 //        System.out.println(InventoryCoords.getItemBounds(client, 4));
 //        Rectangle r = SpellbookCoords.getSpellBounds(client, 1);
